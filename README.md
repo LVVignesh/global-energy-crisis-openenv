@@ -1,3 +1,14 @@
+---
+title: Global Energy Crisis Simulator
+emoji: 🏙️
+colorFrom: red
+colorTo: orange
+sdk: docker
+pinned: false
+tags:
+  - openenv
+---
+
 # 🏙️ Global Energy Crisis: Logistics & Geopolitical Simulator (Round 1)
 
 **Participant:** Vignesh LV | **Category:** Real-World Task Simulation | **OpenEnv Verified**
@@ -61,4 +72,4 @@ Baseline LLM agents (e.g., Meta-Llama-3-8B-Instruct) consistently fail to plan f
 This demonstrates that the environment requires **temporal reasoning and long-term planning**, making it a highly suitable and challenging benchmark for Reinforcement Learning research beyond standard prompt-based agents.
 
 ---
-*Built for the Meta x Scaler OpenEnv Round 1 Hackathon (March 25 – April 8, 2026).*
+
