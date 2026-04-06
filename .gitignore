@@ -1,0 +1,12 @@
+# 🛡️ Global Energy Crisis - Security Shield
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+node_modules/
+dist/
+build/
+.agent/
+.agents/
+.gemini/

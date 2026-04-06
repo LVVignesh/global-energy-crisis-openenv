@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openenv-global_energy_crisis_logistics"
+version = "1.0.0"
+description = "A Geopolitical Energy Crisis logistics simulator for OpenEnv."
+authors = [{ name = "Vignesh LV", email = "vigneshlv1711@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core[core]>=0.2.1",
+    "openai",
+    "requests",
+    "python-dotenv",
+    "pyyaml",
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[project.entry-points."openenv.envs"]
+global_energy_crisis_logistics = "server.environment:GlobalCrisisEnv"
+
+[tool.setuptools]
+packages = ["server"]

@@ -1,0 +1,20 @@
+spec_version: 1
+name: global_energy_crisis_logistics
+type: space
+runtime: fastapi
+app: server.app:app
+port: 7860
+
+tasks:
+  - id: easy
+    name: Baseline Crisis Management
+    description: 160 fuel units. Stabilise all sectors before reserves run out.
+    difficulty: easy
+  - id: medium
+    name: Resource Depletion Protocol
+    description: 120 fuel units. Prioritised allocation required.
+    difficulty: medium
+  - id: hard
+    name: Logistics Bottleneck
+    description: 80 fuel units. Transport must be prioritised to unlock delivery efficiency.
+    difficulty: hard
