@@ -11,7 +11,7 @@ load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY") or os.getenv("HF_TOKEN")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Meta-Llama-3-8B-Instruct")
-ENV_URL = os.getenv("ENV_URL", "http://127.0.0.1:7860/env")
+ENV_URL = os.getenv("ENV_URL", "http://127.0.0.1:7860")
 
 client = OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
 
@@ -121,17 +121,18 @@ async def run_mission(task_id: str):
         print(
             f"[STEP] step={step} action={json.dumps(action)} "
             f"reward={reward:.2f} done={str(done).lower()} "
-            f"error=null fuel_left={fuel_left}"
+            f"error=null"
         )
 
         if done:
             break
 
     total = sum(float(r) for r in rewards)
-    success = total > 0.5
+    score = round(min(max(total / max(len(rewards), 1), 0.0), 1.0), 4)
+    success = score >= 0.5
     print(
         f"[END] success={str(success).lower()} "
-        f"steps={len(rewards)} rewards={','.join(rewards)}"
+        f"steps={len(rewards)} score={score} rewards={','.join(rewards)}"
     )
 
 
