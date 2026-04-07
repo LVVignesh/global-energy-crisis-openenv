@@ -45,6 +45,21 @@ The agent receives a full tactical report:
 | `medium` | Scarcity Protocol | Medium | 120 Units | Manage prioritized depletion with moderate reserves. |
 | `hard` | Logistics Bottleneck | Hard | 80 Units | Solve the Supply Chain deadlock by prioritizing Transport. |
 
+## 📐 Crisis Rules & Scoring Logic
+
+To succeed, an agent must master three "Hidden" mechanics that separate high-performing LLMs from standard chat models:
+
+1.  **Episode Persistence**: Every mission lasts **exactly 5 steps**. Success is measured by the total score accumulated across the entire crisis, not just a single lucky turn.
+2.  **The "Supply Chain" Bottleneck (HARD Mode Only)**: 
+    *   **The Rule**: If the `transport_demand` is **greater than 5**, a systemic logistics deadlock occurs.
+    *   **The Penalty**: All fuel sent to **Hospitals** and **Emergency** services will be **90% less effective** (multiplier 0.1).
+    *   **The Solution**: The agent *must* prioritize clearing the roads (reducing transport demand below 5) first.
+3.  **Weighted Priority Rewards**:
+    *   **Hospitals (40% Weighting)**: The primary moral objective.
+    *   **Emergency (30% Weighting)**: Immediate secondary response.
+    *   **Transport (20% Weighting)**: The critical enabler of the city.
+    *   **Residential (10% Weighting)**: Essential for civilian stability.
+
 ## 🚀 Setup & Execution
 
 ### Local Development
