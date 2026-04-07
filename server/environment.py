@@ -103,30 +103,37 @@ class GlobalCrisisEnv(Environment):
         if total_alloc > state.fuel_available:
             # Over-allocation penalty
             msg = "LOGISTICS OVERLOAD: Allocation exceeds reserves. No fuel shipped."
-            effective_gains = {"hospital": 0.0, "emergency": 0.0, "transport": 0.0, "residential": 0.0}
+            impact_gains = {"hospital": 0.0, "emergency": 0.0, "transport": 0.0, "residential": 0.0}
         else:
             state.fuel_available -= total_alloc
 
-            # 🚨 Logistics Bottleneck — hard mode only
+            # 🚨 Logistics Bottleneck — applies to all NON-TRANSPORT sectors in hard mode
             multiplier = 1.0
             if state.task_difficulty == "hard" and demands.get("transport", 0) > 5:
                 multiplier = 0.1
-                msg = "LOGISTICS BOTTLENECK ACTIVE: Transport must be prioritised first."
+                msg = "LOGISTICS BOTTLENECK ACTIVE: Transport must be prioritised first (Efficiency 10%)."
 
-            effective_gains = {
-                "hospital":    h * multiplier,
-                "emergency":   e * multiplier,
-                "transport":   float(t),
-                "residential": float(r),
+            # Calculate actual impact (useful fuel that reaches the destination)
+            impact_gains = {
+                "hospital":    min(h, demands["hospital"]) * multiplier,
+                "emergency":   min(e, demands["emergency"]) * multiplier,
+                "transport":   float(min(t, demands["transport"])),
+                "residential": min(r, demands["residential"]) * multiplier,
             }
+            
             for k in demands:
-                demands[k] = max(0, demands[k] - int(effective_gains[k]))
+                demands[k] = max(0, demands[k] - int(impact_gains[k]))
 
-        reward = _compute_reward(effective_gains, initial_fuel)
+        reward = _compute_reward(impact_gains, initial_fuel)
         state.step_count += 1
-        state.total_score += reward
-
+        
+        # 🎖️ Survival Bonus: Final step award for keeping all demands low (< 5)
         done = state.step_count >= 5
+        if done and all(d < 5 for d in demands.values()):
+            reward += 0.20  # Strategic Victory Bonus
+            msg += " | MISSION SUCCESS: City stabilized."
+
+        state.total_score += reward
 
         return TaskObservation(
             episode_id=state.episode_id,
@@ -136,7 +143,7 @@ class GlobalCrisisEnv(Environment):
             transport_demand=demands["transport"],
             residential_demand=demands["residential"],
             message=msg,
-            reward=float(reward),
+            reward=float(round(reward, 4)),
             done=bool(done),
         )
 
