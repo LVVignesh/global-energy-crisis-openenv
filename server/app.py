@@ -71,12 +71,20 @@ def ui_step(ep_id, h, e, t, r):
 # 4. Build the "Gold Medal" Command Center Layout
 with gr.Blocks(theme=gr.themes.Soft(primary_hue="red", secondary_hue="orange")) as dio:
     gr.Markdown("# 🏙️ GLOBAL ENERGY CRISIS: COMMAND CENTER")
-    gr.Markdown("### *Strategic Resource Allocation & Logistics Simulator*")
+    gr.Markdown("### *Strategic Resource Allocation & Logistics Simulator — Select a difficulty then hit Initialize!*")
     
+    # Hidden state for difficulty selection
+    diff_input = gr.State("Easy")
+
     with gr.Row():
         with gr.Column(scale=1):
-            diff_input = gr.Radio(["Easy", "Medium", "Hard"], value="Easy", label="Select Crisis Intensity")
-            reset_btn = gr.Button("🚀 INITIALIZE NEW MISSION", variant="primary")
+            gr.Markdown("### 🎯 Select Crisis Intensity")
+            with gr.Row():
+                easy_btn  = gr.Button("🟢 EASY",   variant="secondary", size="lg")
+                med_btn   = gr.Button("🟡 MEDIUM", variant="secondary", size="lg")
+                hard_btn  = gr.Button("🔴 HARD",   variant="secondary", size="lg")
+            diff_label = gr.Textbox(value="Selected: Easy", interactive=False, show_label=False)
+            reset_btn = gr.Button("🚀 INITIALIZE NEW MISSION", variant="primary", size="lg")
             ep_id_display = gr.Textbox(label="Mission ID", interactive=False)
             
         with gr.Column(scale=3):
@@ -92,13 +100,13 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="red", secondary_hue="orange")) 
     
     with gr.Row(visible=False) as control_row:
         with gr.Column():
-            gr.Markdown("### 🛠️ ALLOCATION PLAN")
+            gr.Markdown("### 🛠️ ALLOCATION PLAN  *(Enter units ≥ 0. Total must not exceed Fuel Reserve!)*")
             with gr.Row():
-                h_in = gr.Number(label="Fuel -> Hospital", value=0)
-                e_in = gr.Number(label="Fuel -> Emergency", value=0)
-                t_in = gr.Number(label="Fuel -> Transport", value=0)
-                r_in = gr.Number(label="Fuel -> Residential", value=0)
-            step_btn = gr.Button("⚡ EXECUTE LOGISTICS PLAN", variant="stop")
+                h_in = gr.Number(label="Fuel -> Hospital",    value=0, minimum=0)
+                e_in = gr.Number(label="Fuel -> Emergency",   value=0, minimum=0)
+                t_in = gr.Number(label="Fuel -> Transport",   value=0, minimum=0)
+                r_in = gr.Number(label="Fuel -> Residential", value=0, minimum=0)
+            step_btn = gr.Button("⚡ EXECUTE LOGISTICS PLAN", variant="stop", size="lg")
             
     with gr.Row():
         with gr.Column():
@@ -106,6 +114,10 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="red", secondary_hue="orange")) 
             reward_display = gr.Number(label="Current Step Efficiency (Reward)", interactive=False)
 
     # Wire up the events
+    easy_btn.click(lambda: ("Easy", "Selected: Easy"), None, [diff_input, diff_label])
+    med_btn.click(lambda: ("Medium", "Selected: Medium"), None, [diff_input, diff_label])
+    hard_btn.click(lambda: ("Hard", "Selected: Hard"), None, [diff_input, diff_label])
+
     reset_btn.click(
         ui_reset, inputs=[diff_input], 
         outputs=[ep_id_display, fuel_gauge, h_gauge, e_gauge, t_gauge, r_gauge, log_output, reward_display, control_row, h_in, e_in, t_in, r_in]
