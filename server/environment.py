@@ -124,16 +124,23 @@ class GlobalCrisisEnv(Environment):
             for k in demands:
                 demands[k] = max(0, demands[k] - int(impact_gains[k]))
 
-        reward = _compute_reward(impact_gains, initial_fuel)
+        state.total_score += reward
         state.step_count += 1
         
-        # 🎖️ Survival Bonus: Final step award for keeping all demands low (< 5)
+        # 🎖️ Mission Completion & Score Calculation
         done = state.step_count >= 5
-        if done and all(d < 5 for d in demands.values()):
-            reward += 0.20  # Strategic Victory Bonus
-            msg += " | MISSION SUCCESS: City stabilized."
-
-        state.total_score += reward
+        if done:
+            if all(d < 5 for d in demands.values()):
+                # Apply victory bonus to both immediate reward and total score
+                reward += 0.20  
+                state.total_score += 0.20
+                msg += " | MISSION SUCCESS: City stabilized."
+            else:
+                msg += " | MISSION COMPLETE."
+            
+            # Match the scoring formula in inference.py (Average reward per step, clamped 0-1)
+            final_score = round(max(0.0, min(1.0, state.total_score / 5)), 4)
+            msg += f" Final Mission Score: {final_score}"
 
         return TaskObservation(
             episode_id=state.episode_id,
