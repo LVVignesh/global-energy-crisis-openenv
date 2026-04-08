@@ -54,6 +54,15 @@ To succeed, an agent must master three "Hidden" mechanics that separate high-per
     *   **The Rule**: If the `transport_demand` is **greater than 5**, a systemic logistics deadlock occurs.
     *   **The Penalty**: All fuel sent to **Hospitals** and **Emergency** services will be **90% less effective** (multiplier 0.1).
     *   **The Solution**: The agent *must* prioritize clearing the roads (reducing transport demand below 5) first.
+
+## 🧪 The Frontier Challenge: Research Insights
+
+This simulator is designed as a **Frontier Benchmark** for testing the limits of LLM planning and strategic reasoning under scarcity:
+
+*   **Easy Mode**: Intended for baseline verification and standard agent training.
+*   **Hard Mode**: A high-difficulty challenge even for Frontier LLMs (like Llama-3-8B). Success requires precise multi-turn planning and strict mastery of the Logistics Bottleneck.
+*   **Zero-Shot Baseline**: Our provided baseline (`inference.py`) serves as a starting point. Low scores on Hard mode are expected and demonstrate the complexity of the task, proving that this environment is a valid test of sophisticated planning rather than simple pattern matching.
+
 3.  **Weighted Priority Rewards**:
     *   **Hospitals (40% Weighting)**: The primary moral objective.
     *   **Emergency (30% Weighting)**: Immediate secondary response.

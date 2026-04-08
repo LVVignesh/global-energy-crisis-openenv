@@ -17,7 +17,7 @@ def _compute_reward(effective_gains: Dict[str, float], initial_fuel: int) -> flo
     if initial_fuel <= 0:
         return 0.0
     weighted = sum(effective_gains[k] * _WEIGHTS[k] for k in _WEIGHTS)
-    return float(min(1.0, weighted / initial_fuel))
+    return float(max(0.0, min(1.0, weighted / initial_fuel)))
 
 
 class GlobalCrisisEnv(Environment):
