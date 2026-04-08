@@ -100,10 +100,14 @@ async def run_mission(task_id: str):
         # Use episode_id from the observation
         episode_id = obs.get("episode_id", "")
 
+        # 🛡️ Expert Logic: Strictly filter for only the 4 required fields to prevent 422 Client Errors
+        expected_keys = ["fuel_to_hospital", "fuel_to_emergency", "fuel_to_transport", "fuel_to_residential"]
+        filtered_action = {k: int(action.get(k, 0)) for k in expected_keys}
+
         try:
             step_res = requests.post(
                 f"{ENV_URL}/step",
-                json={"action": action, "episode_id": episode_id},
+                json={"action": filtered_action, "episode_id": episode_id},
                 timeout=10,
             )
             step_res.raise_for_status()
