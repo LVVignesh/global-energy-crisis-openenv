@@ -124,6 +124,7 @@ class GlobalCrisisEnv(Environment):
             for k in demands:
                 demands[k] = max(0, demands[k] - int(impact_gains[k]))
 
+        reward = _compute_reward(impact_gains, initial_fuel)
         state.total_score += reward
         state.step_count += 1
         
