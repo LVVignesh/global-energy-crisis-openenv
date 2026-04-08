@@ -49,7 +49,7 @@ The agent receives a full tactical report:
 
 To succeed, an agent must master three "Hidden" mechanics that separate high-performing LLMs from standard chat models:
 
-1.  **Episode Persistence**: Every mission lasts **exactly 5 steps**. Success is measured by the total score accumulated across the entire crisis, not just a single lucky turn.
+1.  **Episode Persistence**: Every mission lasts **exactly 5 steps**. Success is measured by the **Final Mission Score** (clamped 0-1) accumulated across the entire crisis, visible in the log upon completion.
 2.  **The "Supply Chain" Bottleneck (HARD Mode Only)**: 
     *   **The Rule**: If the `transport_demand` is **greater than 5**, a systemic logistics deadlock occurs.
     *   **The Penalty**: All fuel sent to **Hospitals** and **Emergency** services will be **90% less effective** (multiplier 0.1).
