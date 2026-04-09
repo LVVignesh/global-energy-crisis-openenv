@@ -68,12 +68,14 @@ This simulator is designed as a **Frontier Benchmark** for testing the limits of
     *   **Emergency (30% Weighting)**: Immediate secondary response.
     *   **Transport (20% Weighting)**: The critical enabler of the city.
     *   **Residential (10% Weighting)**: Essential for civilian stability.
+    
+The reward is normalized by total weighted demand (30.5), ensuring fair scoring across all difficulty modes.
 
 ## 🚀 Setup & Execution
 
 ### Local Development
 1. **Clone & Install**: `pip install -r requirements.txt`
-2. **Launch Server**: `uvicorn app:app --port 7860`
+2. **Launch Server**: `uvicorn server.app:app --port 7860`
 3. **Execute Baseline**: `python inference.py`
 
 ### Docker Build
@@ -82,13 +84,17 @@ docker build -t global-crisis-env .
 docker run -p 7860:7860 global-crisis-env
 ```
 
-## 📊 Baseline Baseline Evaluation
+## 📊 Baseline Evaluation
 The environment uses a specialized reward function (0.0 - 1.0) based on weighted demand fulfillment and supply chain efficiency.
 
+**Elite Simulation Features:**
+- **Deterministic Seeding**: Implements `random.seed(seed)` for 100% reproducibility in benchmarks.
+- **Calibrated Fairness**: Reward scaling is normalized against total weighted demand, ensuring "Easy" and "Hard" modes are mathematically comparable.
+
 **Target Mission Scores:**
-- **EASY**: 1.0/1.0 (Full Sector Stability)
-- **MEDIUM**: 1.0/1.0 (Prioritized Sector Survival)
-- **HARD**: 0.5/1.0 (Demonstrated Bottleneck Logic)
+- **EASY**: 0.9 - 1.0/1.0 (Full Sector Stability)
+- **MEDIUM**: 0.7 - 0.9/1.0 (Prioritized Sector Survival)
+- **HARD**: 0.4 - 0.6/1.0 (Demonstrated Bottleneck Logic)
 
 ## 🧪 Baseline Failure Insight
 Baseline LLM agents (e.g., Meta-Llama-3-8B-Instruct) consistently fail to plan fuel allocation across multiple timesteps. As demonstrated in our logs, these agents exhibit panic logic—exhausting strict reserves early (Step 1 or 2) and causing late-stage collapse (Steps 3-5 with 0.00 rewards). 
