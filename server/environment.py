@@ -12,12 +12,11 @@ _DIFFICULTY_CONFIG = {
 _WEIGHTS = {"hospital": 0.40, "emergency": 0.30, "transport": 0.20, "residential": 0.10}
 
 
-def _compute_reward(effective_gains: Dict[str, float], initial_fuel: int) -> float:
-    """Proportional reward in [0.0, 1.0]. No magic thresholds."""
-    if initial_fuel <= 0:
-        return 0.0
+def _compute_reward(effective_gains: Dict[str, float]) -> float:
+    """Proportional reward in [0.0, 1.0]. Normalized by total weighted demand (30.5)."""
+    # Total weighted demand = 40*0.4 + 30*0.3 + 20*0.2 + 15*0.1 = 30.5
     weighted = sum(effective_gains[k] * _WEIGHTS[k] for k in _WEIGHTS)
-    return float(max(0.0, min(1.0, weighted / initial_fuel)))
+    return float(max(0.0, min(1.0, weighted / 30.5)))
 
 
 class GlobalCrisisEnv(Environment):
@@ -39,6 +38,9 @@ class GlobalCrisisEnv(Environment):
         if diff not in _DIFFICULTY_CONFIG:
             diff = "easy"
 
+        if seed is not None:
+            random.seed(seed)
+        
         ep_id = episode_id or str(random.randint(10000, 99999))
         self._current_episode_id = ep_id
         cfg = _DIFFICULTY_CONFIG[diff]
@@ -124,7 +126,7 @@ class GlobalCrisisEnv(Environment):
             for k in demands:
                 demands[k] = max(0, demands[k] - int(impact_gains[k]))
 
-        reward = _compute_reward(impact_gains, initial_fuel)
+        reward = _compute_reward(impact_gains)
         state.total_score += reward
         state.step_count += 1
         
@@ -132,8 +134,8 @@ class GlobalCrisisEnv(Environment):
         done = state.step_count >= 5
         if done:
             if all(d < 5 for d in demands.values()):
-                # Apply victory bonus to both immediate reward and total score
-                reward += 0.20  
+                # Apply victory bonus and clamp to ensure reward never exceeds 1.0
+                reward = min(1.0, reward + 0.20)
                 state.total_score += 0.20
                 msg += " | MISSION SUCCESS: City stabilized."
             else:

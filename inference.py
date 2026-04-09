@@ -1,7 +1,6 @@
 import os
-import json
 import re
-import asyncio
+import json
 import requests
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -18,7 +17,6 @@ client = OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
 
 def extract_json(text: str) -> dict:
     """Robustly extract a JSON object from LLM response text."""
-    import re
     json_match = re.search(r"\{.*\}", text, re.DOTALL)
 
     if json_match:
@@ -35,7 +33,7 @@ def extract_json(text: str) -> dict:
     }
 
 
-async def run_mission(task_id: str):
+def run_mission(task_id: str):
     """
     Execute one mission (easy/medium/hard).
     Emits mandatory [START] / [STEP] / [END] log format for automated grading.
@@ -119,7 +117,6 @@ async def run_mission(task_id: str):
         obs = data["observation"]
         reward = float(data["reward"])
         done = bool(data["done"])
-        fuel_left = obs.get("fuel_available", 0)
         rewards.append(f"{reward:.2f}")
 
         print(
@@ -132,7 +129,7 @@ async def run_mission(task_id: str):
             break
 
     total = sum(float(r) for r in rewards)
-    score = round(min(max(total / max(len(rewards), 1), 0.0), 1.0), 4)
+    score = round(min(max(total / 5, 0.0), 1.0), 4)
     success = score >= 0.5
     print(
         f"[END] success={str(success).lower()} "
@@ -142,4 +139,4 @@ async def run_mission(task_id: str):
 
 if __name__ == "__main__":
     for task in ["easy", "medium", "hard"]:
-        asyncio.run(run_mission(task))
+        run_mission(task)
