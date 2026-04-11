@@ -71,7 +71,7 @@ This simulator is designed as a **Frontier Benchmark** for testing LLM planning 
 
 ### Why this is a Hard Benchmark:
 - **Temporal Planning**: Decisions in Step 1 impact resource availability in Step 5.
-- **Logistics Bottleneck**: Agents must solve a "Suppy Chain Hidden Dependency" by clearing the roads first.
+- **Logistics Bottleneck**: Agents must solve a "Supply Chain Hidden Dependency" by clearing the roads first.
 - **Precision Logistics**: Our **Precision Reward** penalizes wasted fuel, forcing the agent to be exact.
 - **Stochasticity**: Global sector noise ensures every episode is a unique challenge.
 
