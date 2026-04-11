@@ -1,8 +1,12 @@
+import sys
 import os
 import re
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+
+# Ensure the root directory is in sys.path for robust imports of client.py
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from client import GlobalCrisisEnv, GlobalCrisisAction
 
 load_dotenv()
@@ -23,7 +27,13 @@ def extract_json(text: str) -> dict:
             return json.loads(json_match.group())
         except json.JSONDecodeError:
             pass
-    return {}
+    # Safe fallback to prevent crashes
+    return {
+        "fuel_to_hospital": 0,
+        "fuel_to_emergency": 0,
+        "fuel_to_transport": 0,
+        "fuel_to_residential": 0
+    }
 
 
 def run_mission(task_id: str):
@@ -43,6 +53,16 @@ def run_mission(task_id: str):
     rewards = []
 
     for step_num in range(1, 6):
+        # Explicit observation mapping to ensure clean JSON serialization
+        obs_summary = {
+            "fuel_available": obs.fuel_available,
+            "hospital_demand": obs.hospital_demand,
+            "emergency_demand": obs.emergency_demand,
+            "transport_demand": obs.transport_demand,
+            "residential_demand": obs.residential_demand,
+            "message": obs.message
+        }
+
         # Strategy context including the new Precision Logistics / Waste Penalty
         if task_id == "easy":
             strategy = (
@@ -66,7 +86,7 @@ def run_mission(task_id: str):
             "You are a Geopolitical Crisis Logistics AI. You have 5 steps to stabilize the city.\n"
             "RESOURCE OPTIMIZATION: Sending more fuel than the current demand causes an 'Inefficiency Penalty'.\n\n"
             f"{strategy}\n\n"
-            f"Current observation:\n{json.dumps(obs.__dict__, indent=2)}\n\n"
+            f"Current observation:\n{json.dumps(obs_summary, indent=2)}\n\n"
             "Analyze the situation and respond ONLY with a JSON object containing a 'thought_process' and the 4 allocation fields:\n"
             '{"thought_process": "...", "fuel_to_hospital": <int>, "fuel_to_emergency": <int>, '
             '"fuel_to_transport": <int>, "fuel_to_residential": <int>}'

@@ -133,16 +133,16 @@ class GlobalCrisisEnv(Environment):
                 "residential": min(r, demands["residential"]) * multiplier,
             }
             
+            # Calculate waste for metadata/intel (Precision Logistics)
+            # Calculated BEFORE demand reduction to ensure we measure waste against the start-of-step state.
+            waste = (max(0, h - demands["hospital"]) +
+                     max(0, e - demands["emergency"]) +
+                     max(0, t - demands["transport"]) +
+                     max(0, r - demands["residential"]))
+
             for k in demands:
                 demands[k] = max(0, demands[k] - int(impact_gains[k]))
 
-        # Calculate waste for metadata/intel (Precision Logistics)
-        # Using the actual variables h, e, t, r to ensure robustness.
-        waste = (max(0, h - state.current_demands["hospital"]) +
-                 max(0, e - state.current_demands["emergency"]) +
-                 max(0, t - state.current_demands["transport"]) +
-                 max(0, r - state.current_demands["residential"]))
-        
         if waste > 15:
             msg += f" | INEFFICIENCY: {waste} units of fuel wasted."
 
