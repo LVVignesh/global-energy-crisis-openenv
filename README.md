@@ -14,7 +14,19 @@ tags:
 **Participant:** Vignesh LV | **Category:** Real-World Task Simulation | **OpenEnv Verified**
 
 ## 🌐 Environment Motivation
-This environment simulates a high-stakes Geopolitical Energy Crisis, requiring a Crisis Logistics AI to manage a constrained Strategic Global Reserve (Fuel). Unlike simple games, this simulator models a **real-world logistics bottleneck**: fuel must be allocated across four critical sectors, but failure to prioritize **Transport** (Supply Chains) leads to a systemic breakdown where fuel cannot be efficiently delivered to Hospitals or Emergency services.
+This environment simulates a high-stakes Geopolitical Energy Crisis. Unlike simple games, this simulator models a **real-world logistics bottleneck**: fuel must be allocated across four critical sectors, but failure to prioritize **Transport** (Supply Chains) leads to a systemic breakdown.
+
+### 📊 Logistics Flow Logic
+```mermaid
+graph TD
+    A[Strategic Fuel Reserve] --> B{Transport Capacity}
+    B -- "Transport Demand > 5" --> C[Logistics Bottleneck]
+    B -- "Transport Demand <= 5" --> D[Optimal Efficiency]
+    C --> E[90% Efficiency Penalty to Critical Sectors]
+    D --> F[100% Resource Impact]
+    E --> G[Hospital & Emergency Failure]
+    F --> H[Crisis Stabilization]
+```
 
 ### 🏆 30% Real-World Utility
 This environment models a genuine task: **Strategic Resource Allocation**. It evaluates an agent's ability to prioritize long-term supply chain stability (Transport) over short-term critical needs (Hospitals) under severe scarcity.
@@ -55,13 +67,14 @@ To succeed, an agent must master three "Hidden" mechanics that separate high-per
     *   **The Penalty**: All fuel sent to **Hospitals** and **Emergency** services will be **90% less effective** (multiplier 0.1).
     *   **The Solution**: The agent *must* prioritize clearing the roads (reducing transport demand below 5) first.
 
-## 🧪 The Frontier Challenge: Research Insights
+## 🧪 Research Insights & Complexity
+This simulator is designed as a **Frontier Benchmark** for testing LLM planning under severe resource scarcity.
 
-This simulator is designed as a **Frontier Benchmark** for testing the limits of LLM planning and strategic reasoning under scarcity:
-
-*   **Easy Mode**: Intended for baseline verification and standard agent training.
-*   **Hard Mode**: A high-difficulty challenge even for Frontier LLMs (like Llama-3-8B). Success requires precise multi-turn planning and strict mastery of the Logistics Bottleneck.
-*   **Zero-Shot Baseline**: Our provided baseline (`inference.py`) serves as a starting point. Low scores on Hard mode are expected and demonstrate the complexity of the task, proving that this environment is a valid test of sophisticated planning rather than simple pattern matching.
+### Why this is a Hard Benchmark:
+- **Temporal Planning**: Decisions in Step 1 impact resource availability in Step 5.
+- **Logistics Bottleneck**: Agents must solve a "Suppy Chain Hidden Dependency" by clearing the roads first.
+- **Precision Logistics**: Our **Precision Reward** penalizes wasted fuel, forcing the agent to be exact.
+- **Stochasticity**: Global sector noise ensures every episode is a unique challenge.
 
 3.  **Weighted Priority Rewards**:
     *   **Hospitals (40% Weighting)**: The primary moral objective.
@@ -78,6 +91,19 @@ The reward is normalized by total weighted demand (30.5), ensuring fair scoring 
 2. **Launch Server**: `uvicorn server.app:app --port 7860`
 3. **Execute Baseline**: `python inference.py`
 
+### 🔌 Professional SDK (client.py)
+Following Meta's reference standards, we provide a reusable SDK for researchers:
+```python
+from client import GlobalCrisisEnv, GlobalCrisisAction
+
+with GlobalCrisisEnv(base_url="http://127.0.0.1:7860") as env:
+    obs = env.reset(task_id="hard")
+    # Strategic reasoning...
+    action = GlobalCrisisAction(fuel_to_transport=20, fuel_to_hospital=10, ...)
+    obs = env.step(action)
+    print(f"Reward: {obs.reward}")
+```
+
 ### Docker Build
 ```bash
 docker build -t global-crisis-env .
@@ -88,8 +114,10 @@ docker run -p 7860:7860 global-crisis-env
 The environment uses a specialized reward function (0.0 - 1.0) based on weighted demand fulfillment and supply chain efficiency.
 
 **Elite Simulation Features:**
-- **Deterministic Seeding**: Implements `random.seed(seed)` for 100% reproducibility in benchmarks.
-- **Calibrated Fairness**: Reward scaling is normalized against total weighted demand, ensuring "Easy" and "Hard" modes are mathematically comparable.
+- **Deterministic Seeding**: Implements `random.seed(seed)` for 100% reproducibility.
+- **Global Stochasticity**: All sectors (Hospital, Emergency, Transport, Residential) feature randomized demand offsets per episode.
+- **Precision Rewards**: Includes a **Waste Penalty** (0.5% per unit of surplus fuel) to ensure agents optimize resources rather than dumping them.
+- **Calibrated Fairness**: Reward scaling is normalized against total weighted demand.
 
 **Target Mission Scores:**
 - **EASY**: 0.9 - 1.0/1.0 (Full Sector Stability)

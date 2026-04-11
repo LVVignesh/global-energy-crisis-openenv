@@ -12,11 +12,20 @@ _DIFFICULTY_CONFIG = {
 _WEIGHTS = {"hospital": 0.40, "emergency": 0.30, "transport": 0.20, "residential": 0.10}
 
 
-def _compute_reward(effective_gains: Dict[str, float]) -> float:
-    """Proportional reward in [0.0, 1.0]. Normalized by total weighted demand (30.5)."""
-    # Total weighted demand = 40*0.4 + 30*0.3 + 20*0.2 + 15*0.1 = 30.5
+def _compute_reward(effective_gains: Dict[str, float], actual_allocations: Dict[str, int], current_demands: Dict[str, int]) -> float:
+    """Proportional reward in [0.0, 1.0]. Normalized by total weighted demand (30.5) with a waste penalty."""
     weighted = sum(effective_gains[k] * _WEIGHTS[k] for k in _WEIGHTS)
-    return float(max(0.0, min(1.0, weighted / 30.5)))
+    base_reward = weighted / 30.5
+    
+    # Precision Logistics: Penalize waste (sending more fuel than requested)
+    # Each unit of waste subtracts 0.005 (0.5%) from the reward.
+    waste = 0
+    for k in actual_allocations:
+        if k in current_demands and actual_allocations[k] > current_demands[k]:
+            waste += (actual_allocations[k] - current_demands[k])
+    
+    penalty = waste * 0.005
+    return float(max(0.0, min(1.0, base_reward - penalty)))
 
 
 class GlobalCrisisEnv(Environment):
@@ -47,10 +56,10 @@ class GlobalCrisisEnv(Environment):
         noise = random.randint(-2, 2) if seed is None else 0
 
         demands = {
-            "hospital":    cfg["hospital"] + noise,
-            "emergency":   cfg["emergency"],
-            "transport":   cfg["transport"],
-            "residential": cfg["residential"],
+            "hospital":    cfg["hospital"] + (random.randint(-2, 2) if seed is None else 0),
+            "emergency":   cfg["emergency"] + (random.randint(-1, 1) if seed is None else 0),
+            "transport":   cfg["transport"] + (random.randint(-1, 1) if seed is None else 0),
+            "residential": cfg["residential"] + (random.randint(-1, 1) if seed is None else 0),
         }
         state = TaskState(
             episode_id=ep_id,
@@ -126,7 +135,12 @@ class GlobalCrisisEnv(Environment):
             for k in demands:
                 demands[k] = max(0, demands[k] - int(impact_gains[k]))
 
-        reward = _compute_reward(impact_gains)
+        # Calculate waste for metadata/intel
+        waste = sum(max(0, action[f"fuel_to_{k}"] - state.current_demands[k]) for k in _WEIGHTS)
+        if waste > 10:
+            msg += f" | INEFFICIENCY DETECTED: {waste} units of fuel wasted."
+
+        reward = _compute_reward(impact_gains, action, state.current_demands)
         state.total_score += reward
         state.step_count += 1
         
