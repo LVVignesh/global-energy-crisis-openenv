@@ -119,10 +119,11 @@ class GlobalCrisisEnv(Environment):
             state.fuel_available -= total_alloc
 
             # 🚨 Logistics Bottleneck — applies to all NON-TRANSPORT sectors in hard mode
+            # SOFTENED for the waitlist upgrade (0.1 -> 0.4) to provide better learning signals.
             multiplier = 1.0
             if state.task_difficulty == "hard" and demands.get("transport", 0) > 5:
-                multiplier = 0.1
-                msg = "LOGISTICS BOTTLENECK ACTIVE: Transport must be prioritised first (Efficiency 10%)."
+                multiplier = 0.4
+                msg = "LOGISTICS BOTTLENECK ACTIVE: Transport must be prioritised (Efficiency 40%)."
 
             # Calculate actual impact (useful fuel that reaches the destination)
             impact_gains = {
@@ -135,12 +136,17 @@ class GlobalCrisisEnv(Environment):
             for k in demands:
                 demands[k] = max(0, demands[k] - int(impact_gains[k]))
 
-        # Calculate waste for metadata/intel
-        waste = sum(max(0, action[f"fuel_to_{k}"] - state.current_demands[k]) for k in _WEIGHTS)
-        if waste > 10:
-            msg += f" | INEFFICIENCY DETECTED: {waste} units of fuel wasted."
+        # Calculate waste for metadata/intel (Precision Logistics)
+        # Using the actual variables h, e, t, r to ensure robustness.
+        waste = (max(0, h - state.current_demands["hospital"]) +
+                 max(0, e - state.current_demands["emergency"]) +
+                 max(0, t - state.current_demands["transport"]) +
+                 max(0, r - state.current_demands["residential"]))
+        
+        if waste > 15:
+            msg += f" | INEFFICIENCY: {waste} units of fuel wasted."
 
-        reward = _compute_reward(impact_gains, action, state.current_demands)
+        reward = _compute_reward(impact_gains, {"hospital": h, "emergency": e, "transport": t, "residential": r}, state.current_demands)
         state.total_score += reward
         state.step_count += 1
         
