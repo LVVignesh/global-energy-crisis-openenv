@@ -22,9 +22,9 @@ graph TD
     A[Strategic Fuel Reserve] --> B{Transport Capacity}
     B -- "Transport Demand > 5" --> C[Logistics Bottleneck]
     B -- "Transport Demand <= 5" --> D[Optimal Efficiency]
-    C --> E[90% Efficiency Penalty to Critical Sectors]
+    C --> E[60% Efficiency Penalty to Critical Sectors]
     D --> F[100% Resource Impact]
-    E --> G[Hospital & Emergency Failure]
+    E --> G[Hospital & Emergency Degradation]
     F --> H[Crisis Stabilization]
 ```
 
@@ -63,9 +63,8 @@ To succeed, an agent must master three "Hidden" mechanics that separate high-per
 
 1.  **Episode Persistence**: Every mission lasts **exactly 5 steps**. Success is measured by the **Final Mission Score** (clamped 0-1) accumulated across the entire crisis, visible in the log upon completion.
 2.  **The "Supply Chain" Bottleneck (HARD Mode Only)**: 
-    *   **The Rule**: If the `transport_demand` is **greater than 5**, a systemic logistics deadlock occurs.
-    *   **The Penalty**: All fuel sent to **Hospitals** and **Emergency** services will be **90% less effective** (multiplier 0.1).
-    *   **The Solution**: The agent *must* prioritize clearing the roads (reducing transport demand below 5) first.
+    *   **The Penalty**: All fuel sent to **Hospitals** and **Emergency** services will be **60% less effective** (multiplier 0.4). This reflects a "Logistics Friction" scenario rather than a total breakdown.
+    *   **The Solution**: The agent *must* prioritize clearing the roads (reducing transport demand below 5) to restore 100% efficiency.
 
 ## 🧪 Research Insights & Complexity
 This simulator is designed as a **Frontier Benchmark** for testing LLM planning under severe resource scarcity.
@@ -115,8 +114,8 @@ The environment uses a specialized reward function (0.0 - 1.0) based on weighted
 
 **Elite Simulation Features:**
 - **Deterministic Seeding**: Implements `random.seed(seed)` for 100% reproducibility.
-- **Global Stochasticity**: All sectors (Hospital, Emergency, Transport, Residential) feature randomized demand offsets per episode.
-- **Precision Rewards**: Includes a **Waste Penalty** (0.5% per unit of surplus fuel) to ensure agents optimize resources rather than dumping them.
+- **Global Stochasticity**: All sectors (Hospital, Emergency, Transport, Residential) feature randomized demand offsets per episode to test adaptation.
+- **Precision Rewards**: Includes a **Waste Penalty (0.005 per unit)** to penalize over-allocation and reward logistics precision.
 - **Calibrated Fairness**: Reward scaling is normalized against total weighted demand.
 
 **Target Mission Scores:**
