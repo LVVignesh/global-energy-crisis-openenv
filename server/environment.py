@@ -110,6 +110,7 @@ class GlobalCrisisEnv(Environment):
         demands = state.current_demands
         initial_fuel = _DIFFICULTY_CONFIG[state.task_difficulty]["fuel"]
         msg = "Strategic distribution complete."
+        waste = 0
 
         if total_alloc > state.fuel_available:
             # Over-allocation penalty
